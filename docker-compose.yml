@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/robingather.conf:/etc/nginx/conf.d/robingather.conf
+      - ./wordpress:/var/www/wordpress:delegated
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: wp_robingather
+      MYSQL_USER: rgather
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+
+  php:
+    image: php:8.1-fpm-alpine
+    volumes:
+      - ./wordpress:/var/www/wordpress:delegated
