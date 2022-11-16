@@ -1,46 +1,35 @@
 version: '3.9'
 
 services:
-  nginx:
-    image: nginx:stable-alpine
-    ports:
-      - 80:80
-      
-      #- 433:433
+
+  wordpress:
+    image: wordpress:php8.1-apache
     restart: always
-    volumes:
-      - ./nginx/robingather.conf:/etc/nginx/conf.d/default.conf
-      - ./wordpress:/var/www/html
-      #- ./certbot/www:/var/www/certbot:ro
-      #- ./certbot/conf:/etc/nginx/ssl:ro
-      
-    
-  # certbot:
-  #   image: certbot/certbot
-  #   volumes:
-  #     - ./certbot/www:/var/www/certbot:rw
-  #     - ./certbot/conf:/etc/letsencrypt
-  mysql:
-    image: mysql:latest
+    ports:
+      - 8080:80
     environment:
-      MYSQL_DATABASE: wp
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: secret
+      WORDPRESS_DB_NAME: db_robingather
+    volumes:
+      - ./bruh:/var/www/html
+
+  db:
+    image: mysql:latest
+    restart: always
+    ports:
+      - 9921:3306
+    environment:
+      MYSQL_DATABASE: db_robingather
       MYSQL_USER: wp
       MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret2
     volumes:
-      - ./data:/var/lib/mysql
+      - ./data2:/var/lib/mysql
 
-  php:
-    build:
-      context: .
-      dockerfile: php.dockerfile
-    volumes:
-      - ./wordpress:/var/www/html
-
-  # wp:
-  #   build:
-  #     context: .
-  #     dockerfile: php.dockerfile
-  #   volumes:
-  #     - ./wordpress:/var/www/wordpress:delegated
-  #   entrypoint: ['wp', '--allow-root']
+#volumes:
+ # wordpress:
+ #   device: /wordpress
+ # db:
+#    device: /db
