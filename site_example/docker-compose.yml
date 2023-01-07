@@ -45,8 +45,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 1.0
-          memory: 1024M
+          cpus: ${PHPMYADMIN_CPU_LIMIT}
+          memory: ${PHPMYADMIN_MEM_LIMIT}
 
   wp:
     image: wordpress:6.1.1-php8.2-apache
