@@ -1,0 +1,55 @@
+version: "3.8"
+
+volumes:
+  certs:
+  html:
+  vhost:
+  dhparam:
+  acme:
+
+networks:
+  server_net:
+    external: true
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy:1.0.4
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - html:/usr/share/nginx/html
+      - dhparam:/etc/nginx/dhparam
+      - vhost:/etc/nginx/vhost.d
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./config/client_max_upload_size.conf:/etc/nginx/conf.d/client_max_upload_size.conf:ro
+    restart: always
+    networks:
+      - server_net
+
+  letsencrypt:
+    image: nginxproxy/acme-companion:2.2.3
+    container_name: nginx-proxy-companion
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+    environment:
+      DEFAULT_EMAIL: rgather11@gmail.com
+    restart: always
+    networks:
+      - server_net
+
+  stats:
+    image: virtualzone/docker-container-stats
+    ports:
+      - '8080:8080'
+    environment:
+      STATS_UPDATE_INTERVAL: 10
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - '/home/docker/storage/stats/db:/opt/docker-stats/db'

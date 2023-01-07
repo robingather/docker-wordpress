@@ -1,0 +1,75 @@
+version: "3.8"
+# rev: 07-01-23
+
+volumes:
+  data:
+
+networks:
+  site_net:
+  server_net:
+    external: true
+
+services:
+  sql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - 'data:/var/lib/mysql'
+    restart: always
+    networks:
+      - site_net
+    deploy:
+      resources:
+        limits:
+          cpus: ${MYSQL_CPU_LIMIT}
+          memory: ${MYSQL_MEM_LIMIT}
+
+  phpmyadmin:
+    depends_on:
+      - sql
+    image: phpmyadmin/phpmyadmin:5.0
+    restart: always
+    ports:
+      - ${PHPMYADMIN_PORT}:80
+    environment:
+      PMA_HOST: sql
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - site_net
+    volumes:
+      - '../proxy-server/config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
+    deploy:
+      resources:
+        limits:
+          cpus: 1.0
+          memory: 1024M
+
+  wp:
+    image: wordpress:6.1.1-php8.2-apache
+    environment:
+      WORDPRESS_DB_HOST: sql
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('AUTOMATIC_UPDATER_DISABLED', true);
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST}
+    volumes:
+      - './wp-content:/var/www/html/wp-content'
+      - '../proxy-server/config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
+    restart: always
+    depends_on:
+      - sql
+    networks:
+      - site_net
+      - server_net
+    deploy:
+      resources:
+        limits:
+          cpus: ${WP_CPU_LIMIT}
+          memory: ${WP_MEM_LIMIT}
