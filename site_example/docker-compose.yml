@@ -61,7 +61,7 @@ services:
       LETSENCRYPT_HOST: ${VIRTUAL_HOST}
     volumes:
       - './wp-content:/var/www/html/wp-content'
-      - '../reverse_proxy/config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
+      - '../proxy_server/config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
     restart: always
     depends_on:
       - sql
