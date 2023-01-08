@@ -41,7 +41,7 @@ services:
     networks:
       - site_net
     volumes:
-      - '../proxy-server/config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
+      - '../proxy_server/config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
     deploy:
       resources:
         limits:
